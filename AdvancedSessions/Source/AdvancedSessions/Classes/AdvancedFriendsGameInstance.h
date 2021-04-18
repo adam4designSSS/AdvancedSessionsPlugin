@@ -44,6 +44,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AdvancedVoiceInterface)
 	bool bEnableTalkingStatusDelegate;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AdvancedControllerInterface)
+	bool bEnableControllerConnectionDelegate;
+
 	//virtual void PostLoad() override;
 	virtual void Shutdown() override;
 	virtual void Init() override;
@@ -97,6 +100,12 @@ public:
 	FOnLoginStatusChangedDelegate PlayerLoginStatusChangedDelegate;
 	FDelegateHandle PlayerLoginStatusChangedDelegateHandle;
 
+	// Called when a Gamepad was connected or disconnected.
+	UFUNCTION(BlueprintImplementableEvent, Category = "AdvancedController", meta = (DisplayName = "OnControllerConnectionChanged"))
+	void OnControllerConnectionChanged(bool bConnected, int32 UserId, int32 ControllerId);
+
+	void OnControllerConnectionChangedMaster(bool bConnected, FPlatformUserId UserId, int32 ControllerId);
+	FDelegateHandle ControllerConnectionChangedDelegateHandle;
 
 	//*** Session Invite Received From Friend ***//
 	// REMOVED BECAUSE IT NEVER GETS CALLED

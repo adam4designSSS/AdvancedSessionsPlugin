@@ -2,6 +2,7 @@
 #include "AdvancedFriendsGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
+#include "Misc/CoreDelegates.h"
 
 //General Log
 DEFINE_LOG_CATEGORY(AdvancedFriendsInterfaceLog);
@@ -50,6 +51,12 @@ void UAdvancedFriendsGameInstance::Shutdown()
 
 			UE_LOG(AdvancedFriendsInterfaceLog, Warning, TEXT("UAdvancedFriendsInstance Failed to get voice interface!"));
 		}
+	}
+
+	// Unregister controller connection changed callback.
+	if (bEnableControllerConnectionDelegate)
+	{
+		FCoreDelegates::OnControllerConnectionChange.Remove(ControllerConnectionChangedDelegateHandle);
 	}
 
 	IOnlineIdentityPtr IdentityInterface = Online::GetIdentityInterface(GetWorld());
@@ -101,6 +108,12 @@ void UAdvancedFriendsGameInstance::Init()
 
 			UE_LOG(AdvancedFriendsInterfaceLog, Warning, TEXT("UAdvancedFriendsInstance Failed to get voice interface!"));
 		}
+	}
+
+	// Handle controller connection changed.
+	if (bEnableControllerConnectionDelegate)
+	{
+		ControllerConnectionChangedDelegateHandle = FCoreDelegates::OnControllerConnectionChange.AddUObject(this, &ThisClass::OnControllerConnectionChangedMaster);
 	}
 
 	IOnlineIdentityPtr IdentityInterface = Online::GetIdentityInterface(GetWorld());
@@ -331,4 +344,9 @@ void UAdvancedFriendsGameInstance::OnSessionInviteAcceptedMaster(const bool bWas
 			UE_LOG(AdvancedFriendsInterfaceLog, Warning, TEXT("UAdvancedFriendsInstance Return a bad search result in OnSessionInviteAccepted!"));
 		}
 	}
+}
+
+void UAdvancedFriendsGameInstance::OnControllerConnectionChangedMaster(bool bConnected, FPlatformUserId UserId, int32 ControllerId)
+{
+	OnControllerConnectionChanged(bConnected, UserId, ControllerId);
 }
