@@ -257,7 +257,10 @@ void UFindSessionsCallbackProxyAdvanced::FilterSessionResults(const TArray<FBlue
 
 				// Couldn't find this key
 				if (!setting)
-					continue;
+				{
+					bAddResult = false;
+					break; // Changed by lotodore
+				}
 
 				if (!CompareVariants(setting->Data, Filters[i].PropertyKeyPair.Data, Filters[i].ComparisonOp))
 				{
