@@ -44,8 +44,13 @@ void ULoginUserCallbackProxy::Activate()
 
 	if (Identity.IsValid())
 	{
+		// Fallback to default AuthType if nothing is specified
+		if (AuthType.IsEmpty())
+		{
+			AuthType = Identity->GetAuthType();
+		}
 		DelegateHandle = Identity->AddOnLoginCompleteDelegate_Handle(Player->GetControllerId(), Delegate);
-		FOnlineAccountCredentials AccountCreds(AuthType.IsEmpty() ? Identity->GetAuthType() : AuthType, UserID, UserToken);
+		FOnlineAccountCredentials AccountCreds(AuthType, UserID, UserToken);
 		Identity->Login(Player->GetControllerId(), AccountCreds);
 		return;
 	}
@@ -59,7 +64,8 @@ void ULoginUserCallbackProxy::OnCompleted(int32 LocalUserNum, bool bWasSuccessfu
 	if (PlayerControllerWeakPtr.IsValid())
 	{
 		ULocalPlayer* Player = Cast<ULocalPlayer>(PlayerControllerWeakPtr->Player);
-		auto uniqueId = UserId.AsShared();
+
+		FUniqueNetIdRepl UniqueID(UserId.AsShared());
 
 		if (Player)
 		{
@@ -69,15 +75,13 @@ void ULoginUserCallbackProxy::OnCompleted(int32 LocalUserNum, bool bWasSuccessfu
 			{
 				Identity->ClearOnLoginCompleteDelegate_Handle(Player->GetControllerId(), DelegateHandle);
 			}
-			Player->SetCachedUniqueNetId(uniqueId);
+			Player->SetCachedUniqueNetId(UniqueID);
 		}
 
-		APlayerState* State = PlayerControllerWeakPtr->PlayerState;
-
-		if (State)
+		if (APlayerState* State = PlayerControllerWeakPtr->PlayerState)
 		{
 			// Update UniqueId. See also ShowLoginUICallbackProxy.cpp
-			State->SetUniqueId((const FUniqueNetIdPtr&) uniqueId);
+			State->SetUniqueId(UniqueID);
 		}
 	}
 
