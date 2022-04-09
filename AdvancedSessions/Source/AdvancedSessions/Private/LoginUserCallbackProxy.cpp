@@ -65,7 +65,7 @@ void ULoginUserCallbackProxy::OnCompleted(int32 LocalUserNum, bool bWasSuccessfu
 	{
 		ULocalPlayer* Player = Cast<ULocalPlayer>(PlayerControllerWeakPtr->Player);
 
-		FUniqueNetIdRepl UniqueID(UserId.AsShared());
+		auto UniqueID(UserId.AsShared());
 
 		if (Player)
 		{
@@ -81,7 +81,7 @@ void ULoginUserCallbackProxy::OnCompleted(int32 LocalUserNum, bool bWasSuccessfu
 		if (APlayerState* State = PlayerControllerWeakPtr->PlayerState)
 		{
 			// Update UniqueId. See also ShowLoginUICallbackProxy.cpp
-			State->SetUniqueId(UniqueID);
+			State->SetUniqueId((const FUniqueNetIdPtr&) UniqueID);
 		}
 	}
 
